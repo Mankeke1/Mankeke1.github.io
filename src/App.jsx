@@ -136,7 +136,7 @@ function App() {
               transition={{ delay: 0.8, type: "spring" }}
               className="flex-shrink-0 flex items-center"
             >
-              <span className="font-mono text-terminalGreen font-bold text-xl glitch-text" data-text="MK1>">MK1{'>'}</span>
+              <span className="font-mono text-terminalGreen font-bold text-xl glitch-text" data-text="TOM>">TOM{'>'}</span>
             </motion.div>
 
             <div className="hidden md:flex space-x-2 font-mono text-sm">
@@ -169,10 +169,11 @@ function App() {
       </main>
 
       {/* Footer */}
-      <footer className="relative z-10 border-t border-gray-800 py-6 text-center">
-        <p className="font-mono text-gray-600 text-xs">
-          © {new Date().getFullYear()} Mankeke1. Coded with React & Tailwind.<br />
-          <span className="text-terminalGreen/50">SYSTEM_SHUTDOWN // PENDING...</span>
+      <footer className="relative z-10 border-t border-gray-800 py-6 text-center space-y-2">
+        <p className="font-mono text-gray-500 italic text-sm">"Fortis Fortuna Adiuvat"</p>
+        <p className="font-mono text-gray-600 text-xs mt-2">
+          © {new Date().getFullYear()} Portafolios Tom. Coded with React & Tailwind.<br />
+          <span className="text-terminalGreen/50 mt-1 inline-block">SYSTEM_SHUTDOWN // PENDING...</span>
         </p>
       </footer>
     </div>

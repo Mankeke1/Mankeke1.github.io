@@ -1,26 +1,18 @@
-@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/*
- * ==========================================
- * PROPIEDAD INTELECTUAL DE TOMÁS
- * ==========================================
- * Este código es de mi autoría y está protegido por derechos de autor.
- * Queda estrictamente prohibida su copia, distribución, reproducción
- * o modificación sin mi consentimiento explícito. Todos los derechos reservados.
- * ==========================================
- */
-
 @layer base {
   html {
     scroll-behavior: smooth;
+    cursor: none;
+    /* Hide default cursor for standard elements to let custom cursor shine */
   }
 
   body {
-    @apply bg-dark text-gray-300 font-sans antialiased overflow-x-hidden;
+    @apply bg-bgDark text-neutral-200 font-sans antialiased overflow-x-hidden;
   }
 
   h1,
@@ -29,246 +21,64 @@
   h4,
   h5,
   h6 {
-    @apply font-mono text-terminalGreen;
+    @apply font-display tracking-tight;
   }
 
   ::selection {
-    @apply bg-terminalGreen text-dark;
-  }
-
-  ::-webkit-scrollbar {
-    width: 8px;
-  }
-
-  ::-webkit-scrollbar-track {
-    @apply bg-dark;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    @apply bg-terminalGreen rounded-sm;
+    @apply bg-white/20 text-white;
   }
 }
 
-@layer utilities {
-  .hover-glow {
-    @apply transition-all duration-300 ease-in-out;
-  }
+/* --- AMBIENT NOISE --- */
+.bg-noise {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 50;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
 
-  .hover-glow:hover {
-    @apply shadow-[0_0_15px_#39ff14] border-terminalGreen translate-y-[-2px];
-  }
+/* --- TITANIUM / SILVER GRADIENT --- */
+.text-titanium {
+  background: linear-gradient(110deg, #e5e5e5 0%, #ffffff 40%, #a3a3a3 60%, #e5e5e5 100%);
+  background-size: 200% auto;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: shine 6s linear infinite;
+}
 
-  .hover-glow-cyan:hover {
-    @apply shadow-[0_0_15px_#00ffff] border-neonCyan translate-y-[-2px];
-  }
-
-  .text-glow {
-    text-shadow: 0 0 5px rgba(57, 255, 20, 0.5), 0 0 10px rgba(57, 255, 20, 0.3);
-  }
-
-  .text-glow-cyan {
-    text-shadow: 0 0 5px rgba(0, 255, 255, 0.5), 0 0 10px rgba(0, 255, 255, 0.3);
-  }
-
-  /* Glitch Text Effect Base */
-  .glitch-text {
-    position: relative;
-  }
-
-  .glitch-text::before,
-  .glitch-text::after {
-    content: attr(data-text);
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: #0a0a0a;
-  }
-
-  .glitch-text::before {
-    left: 2px;
-    text-shadow: -1px 0 #00ffff;
-    clip: rect(24px, 550px, 90px, 0);
-    animation: glitch-anim-2 3s infinite linear alternate-reverse;
-  }
-
-  .glitch-text::after {
-    left: -2px;
-    text-shadow: -1px 0 #39ff14;
-    clip: rect(85px, 550px, 140px, 0);
-    animation: glitch-anim 2.5s infinite linear alternate-reverse;
+@keyframes shine {
+  to {
+    background-position: 200% center;
   }
 }
 
-@keyframes glitch-anim {
-  0% {
-    clip: rect(10px, 9999px, 83px, 0);
-  }
-
-  5% {
-    clip: rect(65px, 9999px, 36px, 0);
-  }
-
-  10% {
-    clip: rect(4px, 9999px, 7px, 0);
-  }
-
-  15% {
-    clip: rect(28px, 9999px, 94px, 0);
-  }
-
-  20% {
-    clip: rect(77px, 9999px, 62px, 0);
-  }
-
-  25% {
-    clip: rect(51px, 9999px, 12px, 0);
-  }
-
-  30% {
-    clip: rect(96px, 9999px, 86px, 0);
-  }
-
-  35% {
-    clip: rect(93px, 9999px, 47px, 0);
-  }
-
-  40% {
-    clip: rect(81px, 9999px, 2px, 0);
-  }
-
-  45% {
-    clip: rect(19px, 9999px, 59px, 0);
-  }
-
-  50% {
-    clip: rect(15px, 9999px, 23px, 0);
-  }
-
-  55% {
-    clip: rect(85px, 9999px, 73px, 0);
-  }
-
-  60% {
-    clip: rect(44px, 9999px, 49px, 0);
-  }
-
-  65% {
-    clip: rect(5px, 9999px, 32px, 0);
-  }
-
-  70% {
-    clip: rect(86px, 9999px, 100px, 0);
-  }
-
-  75% {
-    clip: rect(2px, 9999px, 81px, 0);
-  }
-
-  80% {
-    clip: rect(69px, 9999px, 37px, 0);
-  }
-
-  85% {
-    clip: rect(38px, 9999px, 55px, 0);
-  }
-
-  90% {
-    clip: rect(53px, 9999px, 10px, 0);
-  }
-
-  95% {
-    clip: rect(27px, 9999px, 90px, 0);
-  }
-
-  100% {
-    clip: rect(41px, 9999px, 7px, 0);
-  }
+/* --- AWWWARDS GLASSMORPHISM --- */
+.glass-panel {
+  @apply bg-white/[0.015] border border-white/[0.05] backdrop-blur-xl;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+  border-radius: 24px;
 }
 
-@keyframes glitch-anim-2 {
-  0% {
-    clip: rect(65px, 9999px, 100px, 0);
-  }
+/* Scrollbar tuning for premium feel */
+::-webkit-scrollbar {
+  width: 4px;
+}
 
-  5% {
-    clip: rect(52px, 9999px, 74px, 0);
-  }
+::-webkit-scrollbar-track {
+  background: black;
+}
 
-  10% {
-    clip: rect(79px, 9999px, 85px, 0);
-  }
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
 
-  15% {
-    clip: rect(75px, 9999px, 5px, 0);
-  }
-
-  20% {
-    clip: rect(67px, 9999px, 61px, 0);
-  }
-
-  25% {
-    clip: rect(14px, 9999px, 79px, 0);
-  }
-
-  30% {
-    clip: rect(1px, 9999px, 66px, 0);
-  }
-
-  35% {
-    clip: rect(86px, 9999px, 30px, 0);
-  }
-
-  40% {
-    clip: rect(23px, 9999px, 98px, 0);
-  }
-
-  45% {
-    clip: rect(85px, 9999px, 72px, 0);
-  }
-
-  50% {
-    clip: rect(71px, 9999px, 75px, 0);
-  }
-
-  55% {
-    clip: rect(2px, 9999px, 48px, 0);
-  }
-
-  60% {
-    clip: rect(30px, 9999px, 16px, 0);
-  }
-
-  65% {
-    clip: rect(59px, 9999px, 50px, 0);
-  }
-
-  70% {
-    clip: rect(41px, 9999px, 62px, 0);
-  }
-
-  75% {
-    clip: rect(2px, 9999px, 82px, 0);
-  }
-
-  80% {
-    clip: rect(47px, 9999px, 73px, 0);
-  }
-
-  85% {
-    clip: rect(3px, 9999px, 27px, 0);
-  }
-
-  90% {
-    clip: rect(26px, 9999px, 55px, 0);
-  }
-
-  95% {
-    clip: rect(42px, 9999px, 97px, 0);
-  }
-
-  100% {
-    clip: rect(38px, 9999px, 49px, 0);
-  }
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }

@@ -1,183 +1,414 @@
-/*
- * ==========================================
- * PROPIEDAD INTELECTUAL DE TOMÁS
- * ==========================================
- * Este código es de mi autoría y está protegido por derechos de autor.
- * Queda estrictamente prohibida su copia, distribución, reproducción
- * o modificación sin mi consentimiento explícito. Todos los derechos reservados.
- * ==========================================
- */
-import { useState, useEffect } from 'react';
-import Hero from './components/Hero';
-import About from './components/About';
-import Projects from './components/Projects';
-import Experience from './components/Experience';
-import TechStack from './components/TechStack';
-import Contact from './components/Contact';
-import ParticlesBackground from './components/ParticlesBackground';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import React, { useRef, useState, useEffect } from 'react';
+import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from 'framer-motion';
+import { Shield, Layout, Terminal, Server, Code2, Database, Github, Linkedin, Mail, ExternalLink, ArrowRight } from 'lucide-react';
 
-function App() {
-  const [loadProgress, setLoadProgress] = useState(0);
-  const [loadComplete, setLoadComplete] = useState(false);
-  const [bootLogs, setBootLogs] = useState([]);
+import projectIotImg from './assets/images/project_iot.png';
+import projectFinanceImg from './assets/images/project_finance.png';
+import projectNetworkImg from './assets/images/project_network.png';
 
-  const { scrollYProgress } = useScroll();
-  const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
+// ==========================================
+// 1. MAGNETIC CUSTOM CURSOR
+// ==========================================
+const CustomCursor = () => {
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const springConfig = { damping: 25, stiffness: 400, mass: 0.5 };
+  const cursorX = useSpring(mouseX, springConfig);
+  const cursorY = useSpring(mouseY, springConfig);
 
   useEffect(() => {
-    const logs = [
-      "INITIALIZING NEURAL NETWORKS...",
-      "LOADING KERNEL MODULES [OK]",
-      "MOUNTING ENCRYPTED FILE SYSTEMS...",
-      "BYPASSING SECURITY PROTOCOLS [WARNING]",
-      "ESTABLISHING SECURE CONNECTION...",
-      "DECRYPTING USER DATA...",
-      "ACCESS GRANTED."
-    ];
-
-    let currentLog = 0;
-    const logInterval = setInterval(() => {
-      if (currentLog < logs.length) {
-        setBootLogs(prev => [...prev, logs[currentLog]]);
-        currentLog++;
-      }
-    }, 450); // Slowed down from 200
-
-    const progressInterval = setInterval(() => {
-      setLoadProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(progressInterval);
-          setTimeout(() => setLoadComplete(true), 800);
-          return 100;
-        }
-        return prev + Math.floor(Math.random() * 8) + 2; // Slower progress increments
-      });
-    }, 350); // Slowed down from 150
-
-    return () => {
-      clearInterval(logInterval);
-      clearInterval(progressInterval);
+    const moveCursor = (e) => {
+      mouseX.set(e.clientX);
+      mouseY.set(e.clientY);
     };
-  }, []);
+    window.addEventListener('mousemove', moveCursor);
+    return () => window.removeEventListener('mousemove', moveCursor);
+  }, [mouseX, mouseY]);
 
-  const navLinks = [
-    { href: "#inicio", label: "_INIT", hoverClass: "hover:text-terminalGreen hover-glow" },
-    { href: "#sobre-mi", label: "_ABOUT", hoverClass: "hover:text-neonCyan hover-glow-cyan" },
-    { href: "#proyectos", label: "_PROJECTS", hoverClass: "hover:text-terminalGreen hover-glow" },
-    { href: "#experiencia", label: "_LOGS", hoverClass: "hover:text-neonPurple hover:shadow-[0_0_15px_#bc13fe] transition-all" },
-    { href: "#contacto", label: "_CONTACT", hoverClass: "hover:text-neonCyan hover-glow-cyan" },
+  return (
+    <motion.div
+      className="fixed top-0 left-0 w-8 h-8 rounded-full border border-white/40 pointer-events-none z-[9999] mix-blend-difference"
+      style={{
+        x: cursorX,
+        y: cursorY,
+        translateX: '-50%',
+        translateY: '-50%'
+      }}
+    />
+  );
+};
+
+// ==========================================
+// 2. SPOTLIGHT BENTO CARD
+// ==========================================
+const SpotlightCard = ({ children, className = "" }) => {
+  const divRef = useRef(null);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [opacity, setOpacity] = useState(0);
+
+  const handleMouseMove = (e) => {
+    if (!divRef.current) return;
+    const rect = divRef.current.getBoundingClientRect();
+    setPosition({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+  };
+
+  return (
+    <div
+      ref={divRef}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setOpacity(1)}
+      onMouseLeave={() => setOpacity(0)}
+      className={`relative overflow-hidden glass-panel group ${className}`}
+    >
+      <div
+        className="pointer-events-none absolute -inset-px opacity-0 transition duration-500 ease-out z-0"
+        style={{
+          opacity,
+          background: `radial-gradient(600px circle at ${position.x}px ${position.y}px, rgba(255,255,255,0.06), transparent 40%)`,
+        }}
+      />
+      {/* Default Subtle Border Glow active on hover */}
+      <div
+        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-0 pointer-events-none"
+        style={{
+          background: `radial-gradient(400px circle at ${position.x}px ${position.y}px, rgba(255,255,255,0.15), transparent 40%)`,
+          maskImage: 'linear-gradient(black, black) content-box, linear-gradient(black, black)',
+          WebkitMaskComposite: 'xor',
+          maskComposite: 'exclude',
+          padding: '1px' // border width
+        }}
+      />
+      <div className="relative z-10 h-full">{children}</div>
+    </div>
+  );
+};
+
+// ==========================================
+// 3. 3D TILT KINEMATIC CARD
+// ==========================================
+const TiltCard = ({ children, className = "" }) => {
+  const ref = useRef(null);
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+
+  const mouseXSpring = useSpring(x, { stiffness: 400, damping: 30 });
+  const mouseYSpring = useSpring(y, { stiffness: 400, damping: 30 });
+
+  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["10deg", "-10deg"]);
+  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-10deg", "10deg"]);
+
+  const handleMouseMove = (e) => {
+    if (!ref.current) return;
+    const rect = ref.current.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    const xPct = mouseX / width - 0.5;
+    const yPct = mouseY / height - 0.5;
+    x.set(xPct);
+    y.set(yPct);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
+  return (
+    <motion.div
+      ref={ref}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{ rotateY, rotateX, transformStyle: "preserve-3d" }}
+      className={`relative w-full h-full ${className}`}
+    >
+      <div style={{ transform: "translateZ(40px)" }} className="w-full h-full">
+        {children}
+      </div>
+    </motion.div>
+  );
+};
+
+// ==========================================
+// 4. STAGGERED HERO TEXT
+// ==========================================
+const StaggeredText = ({ text, className }) => {
+  const letters = Array.from(text);
+
+  const container = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.05, delayChildren: 0.5 }
+    }
+  };
+
+  const child = {
+    hidden: { opacity: 0, y: 50, rotateX: -90 },
+    visible: {
+      opacity: 1, y: 0, rotateX: 0,
+      transition: { type: "spring", damping: 30, stiffness: 400 }
+    }
+  };
+
+  return (
+    <motion.div
+      style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", overflow: "hidden", perspective: "1000px" }}
+      variants={container}
+      initial="hidden"
+      animate="visible"
+      className={className}
+    >
+      {letters.map((letter, index) => (
+        <motion.span variants={child} key={index} className="inline-block origin-bottom font-display tracking-tighter">
+          {letter === " " ? "\u00A0" : letter}
+        </motion.span>
+      ))}
+    </motion.div>
+  );
+};
+
+// ==========================================
+// 5. MAIN APP COMPONENT
+// ==========================================
+export default function App() {
+  const projects = [
+    {
+      title: "3DFAB_LoRa",
+      description: "Sistema IoT LoRa. Integración hardware/software.",
+      tags: ["IoT", "C++", "Node.js", "React"],
+      image: projectIotImg,
+      link: "#"
+    },
+    {
+      title: "ASD Contabilidad",
+      description: "Ecosistema de automatización contable web/desktop.",
+      tags: ["React", "Express", "MySQL", "Electron"],
+      image: projectFinanceImg,
+      link: "#"
+    },
+    {
+      title: "Arquitecturas Asíncronas",
+      description: "Bots de Discord y sistemas de inventario.",
+      tags: ["Python", "Django", "SQLite"],
+      image: projectNetworkImg,
+      link: "#"
+    }
   ];
 
-  if (!loadComplete) {
-    return (
-      <div className="min-h-screen bg-black flex flex-col justify-center items-start p-8 md:p-20 text-terminalGreen font-mono relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, #39ff14 2px, #39ff14 4px)' }}></div>
+  const toolkit = [
+    { name: "Python", icon: <Terminal size={16} /> },
+    { name: "Node.js", icon: <Server size={16} /> },
+    { name: "C++", icon: <Code2 size={16} /> },
+    { name: "React", icon: <Layout size={16} /> },
+    { name: "SQL", icon: <Database size={16} /> },
+  ];
 
-        <div className="max-w-2xl w-full z-10">
-          <h1 className="text-3xl md:text-5xl mb-8 glitch-text font-bold" data-text="SYSTEM_BOOT_SEQ">SYSTEM_BOOT_SEQ</h1>
+  // Nav Drop-in Animation
+  const navVariants = {
+    hidden: { y: -100, opacity: 0 },
+    visible: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 300, damping: 30, delay: 0.2 } }
+  };
 
-          <div className="space-y-2 mb-8 h-48 overflow-hidden flex flex-col justify-end">
-            {bootLogs.map((log, i) => (
+  return (
+    <div className="relative min-h-screen bg-bgDark text-neutral-200">
+      <div className="bg-noise" />
+      <CustomCursor />
+
+      {/* AMBIENT GLOW BLOBS */}
+      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+        <motion.div
+          animate={{ x: [0, 100, 0], y: [0, -50, 0] }}
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          className="absolute -top-[20%] -left-[10%] w-[800px] h-[800px] bg-brandIndigo/20 rounded-full blur-[150px]"
+        />
+        <motion.div
+          animate={{ x: [0, -100, 0], y: [0, 50, 0] }}
+          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+          className="absolute top-[40%] -right-[10%] w-[600px] h-[600px] bg-brandCyan/15 rounded-full blur-[120px]"
+        />
+      </div>
+
+      <div className="relative z-10 flex flex-col items-center">
+
+        {/* NAVBAR */}
+        <motion.nav variants={navVariants} initial="hidden" animate="visible" className="fixed top-8 w-[90%] max-w-7xl mx-auto flex justify-between items-center z-50 mix-blend-difference">
+          <span className="font-display font-bold text-xl tracking-tighter text-white">TQ.</span>
+          <div className="flex gap-6 text-sm font-medium text-neutral-400">
+            <a href="#about" className="hover:text-white transition-colors duration-300">Sobre Mí</a>
+            <a href="#work" className="hover:text-white transition-colors duration-300">Trabajo</a>
+            <a href="#contact" className="hover:text-white transition-colors duration-300">Contacto</a>
+          </div>
+        </motion.nav>
+
+        {/* HERO SECTION */}
+        <section className="min-h-screen w-full flex flex-col justify-center items-center px-6 pt-20">
+          <StaggeredText text="TOMÁS / SYSTEMS ENGINEER." className="text-5xl md:text-7xl lg:text-8xl xl:text-9xl font-bold text-center text-titanium mb-8" />
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.8, duration: 1 }}
+            className="flex flex-col items-center"
+          >
+            <p className="text-lg md:text-xl text-neutral-400 font-light mb-12 text-center max-w-2xl tracking-wide">
+              Arquitectura Lógica. Ciberseguridad Ofensiva. Algorithmic Trading.
+            </p>
+
+            {/* Crystal CTA Button */}
+            <motion.a
+              href="#work"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="relative px-8 py-4 rounded-full bg-white/[0.03] border border-white/10 backdrop-blur-md overflow-hidden group flex items-center gap-3 text-white font-medium"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-brandIndigo/50 to-brandCyan/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl z-0"></div>
+              <span className="relative z-10">Explorar Ecosistemas</span>
+              <ArrowRight className="relative z-10 group-hover:translate-x-1 transition-transform" size={18} />
+            </motion.a>
+          </motion.div>
+
+          {/* Thin Line Separator */}
+          <motion.div
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ delay: 2.2, duration: 1.5, ease: "circOut" }}
+            className="absolute bottom-12 w-px h-24 bg-gradient-to-b from-transparent via-white/20 to-transparent"
+          />
+        </section>
+
+        {/* BENTO GRID (ABOUT) */}
+        <section id="about" className="w-full max-w-7xl px-6 py-32">
+          <motion.h2
+            initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
+            className="text-sm font-bold tracking-[0.2em] uppercase text-neutral-500 mb-12 ml-4"
+          >
+            01 — Manifiesto
+          </motion.h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+            {/* Box 1: Mindset */}
+            <SpotlightCard className="md:col-span-2 p-10 flex flex-col justify-end min-h-[300px]">
+              <h3 className="text-3xl font-display font-semibold text-white mb-4">Mindset Estructural.</h3>
+              <p className="text-neutral-400 leading-relaxed text-lg max-w-xl">
+                Basado en lógica matemática severa y automatización extrema. No escribo código por escribir; dimensiono ecosistemas que resuelven problemas de manera autónoma, escalable y con fricción cero.
+              </p>
+            </SpotlightCard>
+
+            {/* Box 2: Focus */}
+            <SpotlightCard className="p-10 flex flex-col justify-between min-h-[300px]">
+              <Shield className="text-brandCyan mb-6" size={32} />
+              <div>
+                <h3 className="text-xl font-display font-semibold text-white mb-2">Focus</h3>
+                <ul className="text-neutral-400 space-y-2 font-medium">
+                  <li>Algorithmic Trading</li>
+                  <li>Ciberseguridad Ofensiva</li>
+                  <li>Privacidad Digital</li>
+                  <li>IA Generativa</li>
+                </ul>
+              </div>
+            </SpotlightCard>
+
+            {/* Box 3: Toolkit */}
+            <SpotlightCard className="md:col-span-3 p-10 flex flex-col sm:flex-row items-center justify-between gap-8">
+              <h3 className="text-2xl font-display font-semibold text-white shrink-0">Toolkit Core</h3>
+              <div className="flex flex-wrap gap-4 w-full sm:justify-end">
+                {toolkit.map((tool, idx) => (
+                  <div key={idx} className="flex items-center gap-2 px-4 py-2 bg-white/[0.03] border border-white/5 rounded-full text-sm text-neutral-300 font-medium whitespace-nowrap">
+                    <span className="text-brandCyan">{tool.icon}</span>
+                    {tool.name}
+                  </div>
+                ))}
+              </div>
+            </SpotlightCard>
+
+          </div>
+        </section>
+
+        {/* PROJECTS (CINEMATIC GALLERY) */}
+        <section id="work" className="w-full max-w-7xl px-6 py-32 border-t border-white/[0.05]">
+          <motion.h2
+            initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
+            className="text-sm font-bold tracking-[0.2em] uppercase text-neutral-500 mb-16 ml-4"
+          >
+            02 — Ecosistemas Críticos
+          </motion.h2>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            {projects.map((project, idx) => (
               <motion.div
-                key={i}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="text-sm md:text-base text-gray-300"
+                key={idx}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8, delay: idx * 0.1, type: "spring", damping: 20 }}
+                className="group h-[500px]"
               >
-                {'>'} {log}
+                <TiltCard className="w-full h-full">
+                  <div className="absolute inset-0 rounded-2xl overflow-hidden glass-panel flex flex-col border-white/10 group-hover:border-white/20 transition-colors duration-500">
+
+                    <div className="relative h-1/2 overflow-hidden bg-black">
+                      <img
+                        src={project.image}
+                        alt={project.title}
+                        className="w-full h-full object-cover opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700 ease-out"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] to-transparent"></div>
+                    </div>
+
+                    <div className="p-8 h-1/2 flex flex-col justify-between bg-[#0a0a0a]/90 backdrop-blur-md">
+                      <div>
+                        <h3 className="text-2xl font-display font-bold text-white mb-3 group-hover:text-brandCyan transition-colors">
+                          {project.title}
+                        </h3>
+                        <p className="text-neutral-400 text-sm leading-relaxed">
+                          {project.description}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2 mt-4">
+                        {project.tags.map(tag => (
+                          <span key={tag} className="text-[10px] uppercase tracking-wider px-2 py-1 bg-white/5 rounded border border-white/10 text-neutral-300">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                  </div>
+                </TiltCard>
               </motion.div>
             ))}
           </div>
+        </section>
 
-          <div className="w-full h-1 bg-gray-900 overflow-hidden relative">
-            <motion.div
-              className="absolute top-0 left-0 h-full bg-neonCyan shadow-[0_0_10px_#00ffff]"
-              initial={{ width: "0%" }}
-              animate={{ width: `${loadProgress}%` }}
-              transition={{ ease: "circOut" }}
-            />
-          </div>
-          <div className="flex justify-between mt-2 text-xs">
-            <span className="animate-pulse">LOADING...</span>
-            <span>{Math.min(loadProgress, 100)}%</span>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-dark text-white selection:bg-terminalGreen selection:text-black overflow-hidden relative">
-      <ParticlesBackground />
-
-      {/* Background Grid with Parallax */}
-      <motion.div
-        className="fixed inset-0 pointer-events-none z-0 opacity-40"
-        style={{
-          backgroundImage: `linear-gradient(rgba(57, 255, 20, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(57, 255, 20, 0.05) 1px, transparent 1px)`,
-          backgroundSize: '24px 24px',
-          y: backgroundY
-        }}
-      ></motion.div>
-
-      {/* Navigation */}
-      <motion.nav
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ type: "spring", stiffness: 100, damping: 20, delay: 0.2 }}
-        className="fixed top-0 w-full bg-black/80 backdrop-blur-md border-b border-gray-800 border-b-terminalGreen/20 z-50 shadow-[0_4px_30px_rgba(0,0,0,0.5)]"
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.5 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.8, type: "spring" }}
-              className="flex-shrink-0 flex items-center"
-            >
-              <span className="font-mono text-terminalGreen font-bold text-xl glitch-text" data-text="TOM>">TOM{'>'}</span>
-            </motion.div>
-
-            <div className="hidden md:flex space-x-2 font-mono text-sm">
-              {navLinks.map((link, index) => (
-                <motion.a
-                  key={link.label}
-                  href={link.href}
-                  initial={{ opacity: 0, y: -20, rotateX: 90 }}
-                  animate={{ opacity: 1, y: 0, rotateX: 0 }}
-                  transition={{ delay: 1 + (index * 0.15), type: "spring", stiffness: 200, damping: 12 }}
-                  whileHover={{ scale: 1.1, y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                  className={`text-gray-400 px-3 py-2 rounded-sm transition-all duration-300 ${link.hoverClass}`}
-                >
-                  {link.label}
-                </motion.a>
-              ))}
+        {/* FOOTER */}
+        <section id="contact" className="w-full flex justify-center pb-12 pt-32 px-6">
+          <motion.footer
+            initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
+            className="w-full max-w-7xl glass-panel p-10 flex flex-col sm:flex-row items-center justify-between gap-6"
+          >
+            <div>
+              <h2 className="text-xl font-display font-bold text-white">TOMÁS QUINELEN</h2>
+              <p className="text-sm font-medium tracking-widest text-neutral-500 mt-1">FORTIS FORTUNA ADIUVAT.</p>
             </div>
-          </div>
-        </div>
-      </motion.nav>
 
-      <main className="relative z-10 pt-16">
-        <Hero />
-        <About />
-        <Projects />
-        <Experience />
-        <TechStack />
-        <Contact />
-      </main>
+            <div className="flex gap-4">
+              <a href="#" className="p-3 bg-white/5 rounded-full hover:bg-white/10 border border-white/5 hover:border-white/20 transition-all text-neutral-300 hover:text-white">
+                <Github size={20} />
+              </a>
+              <a href="#" className="p-3 bg-white/5 rounded-full hover:bg-white/10 border border-white/5 hover:border-white/20 transition-all text-neutral-300 hover:text-brandCyan">
+                <Linkedin size={20} />
+              </a>
+              <a href="mailto:contactousr@pm.me" className="p-3 bg-white/5 rounded-full hover:bg-white/10 border border-white/5 hover:border-white/20 transition-all text-neutral-300 hover:text-brandIndigo">
+                <Mail size={20} />
+              </a>
+            </div>
+          </motion.footer>
+        </section>
 
-      {/* Footer */}
-      <footer className="relative z-10 border-t border-gray-800 py-6 text-center space-y-2">
-        <p className="font-mono text-gray-500 italic text-sm">"Fortis Fortuna Adiuvat"</p>
-        <p className="font-mono text-gray-600 text-xs mt-2">
-          © {new Date().getFullYear()} Portafolios Tom. Coded with React & Tailwind.<br />
-          <span className="text-terminalGreen/50 mt-1 inline-block">SYSTEM_SHUTDOWN // PENDING...</span>
-        </p>
-      </footer>
+      </div>
     </div>
   );
 }
-
-export default App;

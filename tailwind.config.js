@@ -1,13 +1,4 @@
 /** @type {import('tailwindcss').Config} */
-/*
- * ==========================================
- * PROPIEDAD INTELECTUAL DE TOMÁS
- * ==========================================
- * Este código es de mi autoría y está protegido por derechos de autor.
- * Queda estrictamente prohibida su copia, distribución, reproducción
- * o modificación sin mi consentimiento explícito. Todos los derechos reservados.
- * ==========================================
- */
 export default {
   content: [
     "./index.html",
@@ -16,26 +7,27 @@ export default {
   theme: {
     extend: {
       colors: {
-        dark: "#0a0a0a",
-        neonGreen: "#00ff00",
-        terminalGreen: "#39ff14",
-        neonCyan: "#00ffff",
-        darkPurple: "#2d0042",
-        neonPurple: "#bc13fe",
+        bgDark: '#000000',     // Absolute black
+        brandIndigo: '#312e81', // Deep indigo blob
+        brandCyan: '#164e63',   // Dark cyan blob
       },
       fontFamily: {
-        mono: ['"Fira Code"', '"JetBrains Mono"', 'monospace'],
-        sans: ['"Inter"', 'sans-serif'],
+        sans: ['Inter', 'sans-serif'],
+        display: ['"Space Grotesk"', 'sans-serif'],
       },
       animation: {
-        'glitch': 'glitch 1s linear infinite',
-        'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'blob-spin': 'blobSpin 30s linear infinite',
+        'aurora': 'aurora 60s linear infinite',
       },
       keyframes: {
-        glitch: {
-          '2%, 64%': { transform: 'translate(2px,0) skew(0deg)' },
-          '4%, 60%': { transform: 'translate(-2px,0) skew(0deg)' },
-          '62%': { transform: 'translate(0,0) skew(5deg)' },
+        blobSpin: {
+          '0%': { transform: 'rotate(0deg) scale(1)' },
+          '50%': { transform: 'rotate(180deg) scale(1.2)' },
+          '100%': { transform: 'rotate(360deg) scale(1)' },
+        },
+        aurora: {
+          '0%': { backgroundPosition: '0% 50%' },
+          '100%': { backgroundPosition: '100% 50%' },
         }
       }
     },
